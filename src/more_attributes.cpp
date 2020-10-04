@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "shader.h"
+
 #include <iostream>
 #include <cmath>
 
@@ -11,57 +13,7 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-unsigned int compileVertexShader() {
-  // Source for vertex shader.
-  const char *vertex_shader_source = "#version 330 core\n"
-                                     "layout (location = 0) in vec3 aPos;\n"
-                                     "layout (location = 1) in vec3 aColor;\n"
-                                     "out vec3 ourColor;\n"
-                                     "void main()\n"
-                                     "{\n"
-                                     "  gl_Position = vec4(aPos, 1.0f);\n"
-                                     "  ourColor = aColor;\n"
-                                     "}\0";
-  unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  // Attach the shader source code to the shader object and compile the shader.
-  glShaderSource(vertex_shader, /*how many strings are we passing*/ 1, &vertex_shader_source, NULL);
-  glCompileShader(vertex_shader);
-
-  // Check if compilation was successful.
-  int success;
-  char  msg[512];
-  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(vertex_shader, 512, NULL, msg);
-    std::cout << "VERTEX SHADER COMPILATION FAILED\n" << msg << std::endl;
-  }
-  return vertex_shader;
-}
-
-unsigned int compileFragmentShader() {
-  const char *frag_shader_source = "#version 330 core\n"
-                                   // Output variable FragColor.
-                                   "out vec4 FragColor;\n"
-                                   "in vec3 ourColor;\n"
-                                   "void main()\n"
-                                   "{\n"
-                                   "  FragColor = vec4(ourColor, 1.0f);\n"
-                                   "}\n\0";
-  unsigned int frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  // Attach the shader source code to the shader object and compile the shader.
-  glShaderSource(frag_shader, /*how many strings are we passing*/ 1, &frag_shader_source, NULL);
-  glCompileShader(frag_shader);
-
-  // Check if compilation was successful.
-  int success;
-  char  msg[512];
-  glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(frag_shader, 512, NULL, msg);
-    std::cout << "FRAG SHADER COMPILATION FAILED\n" << msg << std::endl;
-  }
-  return frag_shader;
-}
+using experimentgl::Shader;
 
 int main()
 {
@@ -92,27 +44,8 @@ int main()
         return -1;
     }
 
-    unsigned int vs = compileVertexShader();
-    unsigned int fs = compileFragmentShader();
-    // Shader program: multiple shaders combined.
-    // Links output of each shader to the input of the next shader.
-    unsigned int sp = glCreateProgram();
-    glAttachShader(sp, vs);
-    glAttachShader(sp, fs);
-    glLinkProgram(sp);
-    // Check if linking was successful.
-    int success;
-    char msg[512];
-    glGetShaderiv(sp, GL_LINK_STATUS, &success);
-    if (!success) {
-      glGetShaderInfoLog(sp, 512, NULL, msg);
-      std::cout << "SHADER LINK FAILED\n" << msg << std::endl;
-    }
-    glUseProgram(sp);
-
-    // Once linked we do not need them anymore.
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+    std::unique_ptr<Shader> shader = Shader::Create("vertex_shaders/triangle.vs", "fragment_shaders/triangle.fs");
+    shader->use();
 
     // render loop
     // -----------
@@ -135,9 +68,9 @@ int main()
 
       float vertices[] = {
         // positions          // colors
-        -0.5f, -0.5f, 0.0f, r1, g1, b1,
-        0.0f, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.0f,  r2, g2, b2,
+        -0.75f, 0.75f, 0.0f, r1, g1, b1,
+        0.0f, -0.75f, 0.0f,   0.0f, 0.0f, 0.0f,
+        0.75f, 0.75f, 0.0f,  r2, g2, b2,
       };
       // Bind VAO.
       unsigned int VAO[1];
@@ -166,7 +99,7 @@ int main()
       // Rendering commands here.
       glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
-      glUseProgram(sp);
+      shader->use();
       glBindVertexArray(VAO[0]);
       glDrawArrays(GL_TRIANGLES, 0, 3);
       // glDrawArrays(GL_TRIANGLES, 0, 3);
