@@ -99,6 +99,7 @@ int main()
       // Rendering commands here.
       glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
+      shader->setFloat("rightShiftOffset", 0.25f);
       shader->use();
       glBindVertexArray(VAO[0]);
       glDrawArrays(GL_TRIANGLES, 0, 3);
