@@ -88,7 +88,7 @@ bool Shader::Init() {
   unsigned int vertex = CompileShader(GL_VERTEX_SHADER, v_code.c_str());
   unsigned int fragment = CompileShader(GL_FRAGMENT_SHADER, fr_code.c_str());
   std::cout<< "vertex shader: " << v_code << std::endl;
-  std::cout<< "fragment shader: " << v_code << std::endl;
+  std::cout<< "fragment shader: " << fr_code << std::endl;
   if (!CompileProgram(std::move(vertex), std::move(fragment))) {
     return false;
   }

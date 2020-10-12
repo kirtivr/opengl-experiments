@@ -1,7 +1,7 @@
 IDIR=../include
 CC=g++
-CFLAGS=-Wall -Werror -I$(IDIR)
-
+CFLAGS= -I$(IDIR)
+CCFLAGS= -Wall -Werror
 ODIR=/home/kirtivr/opengl/src/objs
 LDIR=../lib
 
@@ -35,6 +35,9 @@ $(ODIR)/libshader.so: $(ODIR)/shader.o
 	$(CC) -shared -o $@ $<
 
 more_attributes: more_attributes.cpp $(ODIR)/libshader.so $(ODIR)/libglad.so
+	$(CC) $@.cpp -o $(ODIR)/$@.o $(CFLAGS) $(LIBS) -L$(ODIR) -Wl,-rpath=$(ODIR) -lglad -lshader 
+
+textured_nearest: textured_nearest.cpp $(ODIR)/libshader.so $(ODIR)/libglad.so
 	$(CC) $@.cpp -o $(ODIR)/$@.o $(CFLAGS) $(LIBS) -L$(ODIR) -Wl,-rpath=$(ODIR) -lglad -lshader 
 
 .PHONY: clean
